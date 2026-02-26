@@ -93,18 +93,24 @@
                 setActiveVideo(true);
             };
 
-            const handleSearch = (e) => {
-                const val = e.target.value.toLowerCase();
-                setQuery(val);
-                if (val.length > 1) {
-                    const filtered = searchDatabase.filter(item => 
-                        item.keyword.toLowerCase().includes(val)
-                    );
-                    setResults(filtered);
-                } else {
-                    setResults([]);
-                }
-            };
+           const handleSearch = (e) => {
+    const rawValue = e.target.value;
+    setQuery(rawValue); // Updates what you see in the search bar
+    
+    // Automatically removes invisible spaces at the end
+    const searchVal = rawValue.toLowerCase().trim(); 
+    
+    if (searchVal.length > 1) {
+        const filtered = searchDatabase.filter(item => 
+            // Now it searches the keyword AND the actual transcript text!
+            item.keyword.toLowerCase().includes(searchVal) || 
+            item.occurrences.some(occ => occ.text.toLowerCase().includes(searchVal))
+        );
+        setResults(filtered);
+    } else {
+        setResults([]);
+    }
+};
 
             const formatTime = (seconds) => {
                 const min = Math.floor(seconds / 60);
@@ -197,4 +203,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
