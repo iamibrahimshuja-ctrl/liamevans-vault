@@ -21,9 +21,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // TARGET: LIAM EVANS
-        // VIDEO ID: yj3wfRp-cuw
-
         const searchDatabase = [
             {
                 id: 1,
@@ -78,6 +75,20 @@
                 }
             }, []);
 
+            // THE FIX: This watches the query and automatically searches whenever it changes
+            useEffect(() => {
+                const searchVal = query.toLowerCase().trim();
+                if (searchVal.length > 1) {
+                    const filtered = searchDatabase.filter(item => 
+                        item.keyword.toLowerCase().includes(searchVal) || 
+                        item.occurrences.some(occ => occ.text.toLowerCase().includes(searchVal))
+                    );
+                    setResults(filtered);
+                } else {
+                    setResults([]);
+                }
+            }, [query]);
+
             const loadVideo = (videoId, timestamp) => {
                 if (player) {
                     player.loadVideoById({videoId: videoId, startSeconds: timestamp});
@@ -91,30 +102,6 @@
                     });
                 }
                 setActiveVideo(true);
-            };
-
-            const handleSearch = (e) => {
-                const rawValue = e.target.value;
-                setQuery(rawValue); // Updates the text in the UI
-                
-                // The Upgrade: Trims spaces and makes it lowercase
-                const searchVal = rawValue.toLowerCase().trim(); 
-                
-                if (searchVal.length > 1) {
-                    const filtered = searchDatabase.filter(item => 
-                        item.keyword.toLowerCase().includes(searchVal) || 
-                        item.occurrences.some(occ => occ.text.toLowerCase().includes(searchVal))
-                    );
-                    setResults(filtered);
-                } else {
-                    setResults([]);
-                }
-            };
-
-            const formatTime = (seconds) => {
-                const min = Math.floor(seconds / 60);
-                const sec = seconds % 60;
-                return `${min}:${sec < 10 ? '0' : ''}${sec}`;
             };
 
             return (
@@ -149,7 +136,7 @@
                                     className="w-full bg-transparent p-6 text-xl text-white placeholder-slate-600 focus:outline-none"
                                     placeholder="Search 'High Ticket', 'VSSL', or 'Cold Traffic'..."
                                     value={query}
-                                    onChange={handleSearch}
+                                    onChange={(e) => setQuery(e.target.value)}
                                     autoFocus
                                 />
                             </div>
@@ -186,7 +173,7 @@
                             {!query && (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
                                     {['VSSL', 'High Ticket', 'Cold Traffic'].map(tag => (
-                                        <button key={tag} onClick={() => setQuery(tag.toLowerCase())} className="p-4 glass-panel rounded-xl text-center hover:bg-white/5 transition border border-slate-800 hover:border-cyan-500/50 group">
+                                        <button key={tag} onClick={() => setQuery(tag)} className="p-4 glass-panel rounded-xl text-center hover:bg-white/5 transition border border-slate-800 hover:border-cyan-500/50 group">
                                             <span className="text-slate-500 group-hover:text-slate-300 font-medium">{tag}</span>
                                         </button>
                                     ))}
@@ -200,6 +187,4 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-    </script>
-</body>
-</html>
+
